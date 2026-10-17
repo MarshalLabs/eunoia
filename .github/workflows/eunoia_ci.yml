@@ -1,0 +1,126 @@
+name: Eunoia CI
+
+# E0-04 — quality gates for plugins/eunoia (architecture §9).
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eunoia-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Pint · RTL lint · i18n
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: calendar, curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_pgsql, zip, bcmath
+          tools: composer:v2
+
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php84-composer-${{ hashFiles('composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist --no-scripts
+
+      - name: Pint (plugins/eunoia only)
+        run: |
+          if [ -d plugins/eunoia ]; then vendor/bin/pint --test plugins/eunoia; else echo "no plugins/eunoia yet"; fi
+
+      - name: RTL lint
+        run: .github/scripts/eunoia-rtl-lint.sh
+
+      - name: i18n keys (ar/en)
+        run: php .github/scripts/eunoia-i18n-check.php
+
+  pest:
+    name: Pest (plugins/eunoia, PostgreSQL 16)
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: eunoia
+          POSTGRES_PASSWORD: eunoia
+          POSTGRES_DB: eunoia_test
+        ports:
+          - 5432:5432
+        options: --health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: calendar, curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_pgsql, zip, bcmath
+          ini-values: error_reporting=E_ALL, max_execution_time=0, memory_limit=1024M
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php84-composer-${{ hashFiles('composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - name: Environment (fake values only)
+        run: |
+          cp .env.example .env
+          sed -i "s|^APP_ENV=.*|APP_ENV=testing|; s|^APP_LOCALE=.*|APP_LOCALE=ar|; s|^APP_TIMEZONE=.*|APP_TIMEZONE=Asia/Amman|; s|^APP_CURRENCY=.*|APP_CURRENCY=JOD|; s|^DB_CONNECTION=.*|DB_CONNECTION=pgsql|" .env
+          sed -i "s|^#\?\s*DB_HOST=.*|DB_HOST=127.0.0.1|; s|^#\?\s*DB_PORT=.*|DB_PORT=5432|; s|^#\?\s*DB_DATABASE=.*|DB_DATABASE=eunoia_test|; s|^#\?\s*DB_USERNAME=.*|DB_USERNAME=eunoia|; s|^#\?\s*DB_PASSWORD=.*|DB_PASSWORD=eunoia|" .env
+          echo "JOFOTARA_BASE_URL=http://127.0.0.1:8080" >> .env
+          echo "JOFOTARA_MODE=mock" >> .env
+          php artisan key:generate
+          cp .env .env.testing
+
+      - name: Install ERP (Jordan)
+        run: |
+          php artisan erp:install --no-interaction --force --admin-name=CI --admin-email=admin@example.com --admin-password=admin123 --country=JO
+          php artisan point-of-sale:install --no-interaction
+          if php artisan help eunoia:install >/dev/null 2>&1; then php artisan eunoia:install --country=JO --no-interaction; fi
+
+      - name: JoFotara mock
+        run: |
+          npx --yes jofotara-kit@0.3.0 serve --port 8080 > /tmp/jofotara-mock.log 2>&1 &
+          for _ in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:8080 && exit 0; sleep 1; done
+          cat /tmp/jofotara-mock.log; exit 1
+
+      - name: Validate JoFotara golden files
+        run: |
+          mapfile -t files < <(find plugins/eunoia -path '*tests/Fixtures*' -name '*.xml' 2>/dev/null || true)
+          if [ ${#files[@]} -gt 0 ]; then npx --yes jofotara-kit@0.3.0 validate "${files[@]}"; else echo "no golden XML yet"; fi
+
+      - name: Pest
+        run: |
+          if [ -d plugins/eunoia ]; then vendor/bin/pest plugins/eunoia --colors=always; else echo "no plugins/eunoia yet"; fi
+
+  secrets:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan Eunoia commits for secrets
+        run: |
+          # Only our history: commits after the upstream baseline we forked from.
+          docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:v8.28.0 \
+            git --no-banner --redact --config /repo/.gitleaks.toml \
+            --log-opts="44862a7d7d373ca4a37ab887e1c7fe50ff04caf7..HEAD" /repo

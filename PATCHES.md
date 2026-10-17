@@ -9,6 +9,7 @@ Every change outside `plugins/eunoia/**` and `docs/eunoia/**` must be listed her
 | P3 | Planned | `plugins/webkul/security/src/Data/states.json` | Add Palestinian governorates | _to open_ |
 | P4 | Planned | `AGENTS.md` (replaced), `CLAUDE.md` (new) | Upstream file had wrong framework versions | No (ours) |
 | P6 | Done (E0-03) | `docker-compose.eunoia.yml`, `docker/eunoia/**` (new files, ours) | Local dev stack on PHP 8.4; upstream files untouched | No (ours) |
+| P7 | Done (E0-04) | `.github/workflows/eunoia_ci.yml`, `.github/scripts/eunoia-*`, `.gitleaks.toml` (new files, ours) | CI gates for plugins/eunoia | No (ours) |
 | P5 | Spike (E3-03) | POS till | Extension point for extra till components, only if none exists | Discuss upstream first |
 
 ## Template

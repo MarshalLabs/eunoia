@@ -1,0 +1,13 @@
+# gitleaks config for Eunoia (E0-04). Extends the default rules.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known fake local-dev values only — never allowlist whole doc folders"
+paths = [
+  '''\.env\.example$''',
+]
+stopwords = [
+  "admin123",
+  "eunoia",
+]
