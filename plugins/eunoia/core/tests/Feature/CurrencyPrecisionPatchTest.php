@@ -7,8 +7,13 @@ use Webkul\Support\Models\Currency;
 
 require_once dirname(__DIR__, 5).'/plugins/webkul/support/tests/Helpers/TestBootstrapHelper.php';
 
+beforeEach(function () {
+    TestBootstrapHelper::ensureERPInstalled();
+});
+
 /**
  * Patch P1 / finding F1 / JO-01: currencies.rounding must keep 0.001 for JOD.
+ * Note: up() runs ALTER TABLE; on MySQL that commits the test transaction (CI uses PostgreSQL).
  */
 function runCurrencyPrecisionPatch(): void
 {

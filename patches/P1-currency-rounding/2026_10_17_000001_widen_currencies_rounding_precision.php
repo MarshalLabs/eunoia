@@ -33,9 +33,11 @@ return new class extends Migration
 
         DB::table('currencies')->orderBy('id')->get(['id', 'name', 'decimal_places', 'rounding'])
             ->each(function (object $currency) use ($seed): void {
-                $expected = isset($seed[$currency->name]['rounding'])
-                    ? (float) $seed[$currency->name]['rounding']
-                    : (float) pow(10, -max((int) $currency->decimal_places, 0));
+                $expected = match (true) {
+                    isset($seed[$currency->name]['rounding']) => (float) $seed[$currency->name]['rounding'],
+                    $currency->decimal_places === null        => 0.01,
+                    default                                   => (float) pow(10, -max((int) $currency->decimal_places, 0)),
+                };
 
                 if ((float) $currency->rounding <= 0 && $expected > 0) {
                     DB::table('currencies')->where('id', $currency->id)->update(['rounding' => $expected]);
@@ -43,10 +45,12 @@ return new class extends Migration
             });
     }
 
+    /**
+     * Intentionally keeps the wide column: narrowing back to decimal(8,2) would truncate
+     * 0.001 to 0.00 again and re-introduce the bug (F1).
+     */
     public function down(): void
     {
-        Schema::table('currencies', function (Blueprint $table) {
-            $table->decimal('rounding', 8, 2)->default(0.00)->change();
-        });
+        //
     }
 };
