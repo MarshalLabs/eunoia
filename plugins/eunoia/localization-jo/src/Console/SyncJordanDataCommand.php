@@ -3,6 +3,7 @@
 namespace Eunoia\LocalizationJo\Console;
 
 use Eunoia\LocalizationJo\Database\Seeders\JordanChartOfAccountsSeeder;
+use Eunoia\LocalizationJo\Database\Seeders\JordanSeedDataSeeder;
 use Eunoia\LocalizationJo\Database\Seeders\JordanTaxSeeder;
 use Illuminate\Console\Command;
 
@@ -17,6 +18,7 @@ class SyncJordanDataCommand extends Command
 
     public function handle(): int
     {
+        app(JordanSeedDataSeeder::class)->run();
         app(JordanChartOfAccountsSeeder::class)->run();
         $this->info(__('eunoia-localization-jo::localization.install.accounts'));
 
