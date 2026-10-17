@@ -1,0 +1,22 @@
+{
+    "name": "eunoia/localization-jo",
+    "description": "Eunoia Jordan localization: taxes with JoFotara categories, chart of accounts, governorates, identities",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eunoia"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eunoia\\LocalizationJo\\LocalizationJoServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Eunoia\\LocalizationJo\\": "src/"
+        }
+    }
+}
