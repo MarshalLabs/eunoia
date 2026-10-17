@@ -28,6 +28,24 @@ class Doctor
     }
 
     /**
+     * @param  class-string<DoctorCheck>  $old
+     * @param  class-string<DoctorCheck>  $new
+     */
+    public function replace(string $old, string $new): static
+    {
+        $index = array_search($old, $this->checks, true);
+
+        if ($index === false) {
+            return $this->register($new);
+        }
+
+        $this->checks[$index] = $new;
+        $this->checks = array_values(array_unique($this->checks));
+
+        return $this;
+    }
+
+    /**
      * @return array<int, class-string<DoctorCheck>>
      */
     public function checks(): array

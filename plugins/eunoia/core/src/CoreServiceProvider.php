@@ -11,6 +11,7 @@ use Eunoia\Core\Doctor\Checks\FontsCheck;
 use Eunoia\Core\Doctor\Checks\LocaleCheck;
 use Eunoia\Core\Doctor\Checks\QueueWorkerCheck;
 use Eunoia\Core\Doctor\Doctor;
+use Eunoia\Core\Support\InstalledPlugins;
 use Filament\Panel;
 use Webkul\PluginManager\Console\Commands\InstallCommand;
 use Webkul\PluginManager\Console\Commands\UninstallCommand;
@@ -40,6 +41,8 @@ class CoreServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(InstalledPlugins::class);
+
         $this->app->singleton(Doctor::class, fn (): Doctor => new Doctor([
             DatabaseCheck::class,
             CurrencyPrecisionCheck::class,
