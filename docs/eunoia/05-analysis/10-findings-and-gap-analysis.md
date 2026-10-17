@@ -44,6 +44,7 @@ Severity: **P0** blocks MVP · **P1** needed for pilot · **P2** quality.
 | F23 | P2 | `plugin:uninstall` drops tables — dangerous in production | README / plugin manager | Disable in prod (architecture §10) |
 | F24 | info | Upstream is rewriting the POS into one Vue app (plan dated 9 Oct 2026) | `docs/superpowers/plans/2026-10-09-pos-fully-vuejs.md` | Target Vue till only (ADR-11) |
 | F25 | info | Composer merge plugin is disabled when composer runs as root → plugins not loaded | Install log | Runbook |
+| F26 | P1 | POS server totals are rounded to a hard-coded 4 decimals, not the currency rounding: a 10 % discount on 3.765 JOD stores −0.3765 and a total of 3.3885 (the till JS rounds with the currency). Legal documents (invoice, JoFotara XML, receipt) must round to fils (0.001) | `point-of-sale/src/Services/OrderCalculator.php` (`precisionDigits: 4`); test `eunoia/core/tests/Feature/PosJodMathTest.php` (17 Oct 2026) | E2-04/E3-01 round per currency; consider upstream PR |
 
 ## 3. Requirements coverage (upstream vs needed)
 
