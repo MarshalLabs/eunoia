@@ -2,10 +2,16 @@
 
 namespace Eunoia\Arabic;
 
+use Carbon\Carbon;
 use Eunoia\Arabic\Translation\OverlayLoader;
 use Eunoia\Core\Support\InstalledPlugins;
 use Filament\Panel;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 use Illuminate\Contracts\Translation\Loader;
+use Illuminate\Foundation\Events\LocaleUpdated;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Event;
 use Webkul\PluginManager\Console\Commands\InstallCommand;
 use Webkul\PluginManager\Console\Commands\UninstallCommand;
 use Webkul\PluginManager\Package;
@@ -30,6 +36,8 @@ class ArabicServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->mergeConfigFrom(__DIR__.'/../config/eunoia-arabic.php', 'eunoia-arabic');
+
         $this->app->extend('translation.loader', fn (Loader $loader): Loader => new OverlayLoader(
             $loader,
             [
@@ -51,6 +59,35 @@ class ArabicServiceProvider extends PackageServiceProvider
         }
 
         ArabicPluralizer::install(static::plurals());
+
+        $this->useLevantineDates($this->app->getLocale());
+
+        Event::listen(LocaleUpdated::class, fn (LocaleUpdated $event) => $this->useLevantineDates($event->locale));
+
+        Table::configureUsing(function (Table $table): void {
+            $table
+                ->defaultDateDisplayFormat(ArabicDates::SHORT_FORMAT)
+                ->defaultDateTimeDisplayFormat(ArabicDates::SHORT_DATETIME_FORMAT);
+        });
+
+        Schema::configureUsing(function (Schema $schema): void {
+            $schema
+                ->defaultDateDisplayFormat(ArabicDates::SHORT_FORMAT)
+                ->defaultDateTimeDisplayFormat(ArabicDates::SHORT_DATETIME_FORMAT);
+        });
+    }
+
+    /**
+     * Laravel sets Carbon's locale to the app locale; for Arabic we use ar_JO (Levantine month names).
+     */
+    protected function useLevantineDates(string $locale): void
+    {
+        if ($locale !== 'ar') {
+            return;
+        }
+
+        Carbon::setLocale(ArabicDates::CARBON_LOCALE);
+        Date::setLocale(ArabicDates::CARBON_LOCALE);
     }
 
     /**
