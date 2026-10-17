@@ -42,7 +42,7 @@ github.com/<you>/eunoia            ← our repo (a fork of aureuserp/aureuserp)
 | `docs/eunoia/**` | Us | These documents |
 | `AGENTS.md`, `CLAUDE.md` | Us | Agent guide (we replace upstream's stale Boost file; keep Boost content in `docs/eunoia/agents/laravel-boost.md`) |
 
-Root `composer.json` already merges `plugins/*/*/composer.json`, so `plugins/eunoia/<name>/composer.json` is picked up automatically — **no core change needed to add plugins**.
+Root `composer.json` already merges `plugins/*/*/composer.json` for **autoloading**, but upstream lists service providers by hand in `bootstrap/providers.php`. Patch P8 adds one line there (`Eunoia\Core\EunoiaServiceProvider`), which registers every provider named in `plugins/eunoia/*/composer.json` → `extra.laravel.providers` (core first). After that, **adding a plugin needs no core change** — just `composer dump-autoload`.
 
 Target: **≤ 10 patched upstream files**, each with an upstream PR.
 

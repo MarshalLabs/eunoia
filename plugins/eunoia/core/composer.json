@@ -1,0 +1,27 @@
+{
+    "name": "eunoia/core",
+    "description": "Eunoia core: install meta command, doctor, shared helpers",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eunoia"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eunoia\\Core\\CoreServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Eunoia\\Core\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Eunoia\\Core\\Tests\\": "tests/"
+        }
+    }
+}
