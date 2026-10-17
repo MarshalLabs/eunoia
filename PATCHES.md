@@ -11,6 +11,7 @@ Every change outside `plugins/eunoia/**` and `docs/eunoia/**` must be listed her
 | P6 | Done (E0-03) | `docker-compose.eunoia.yml`, `docker/eunoia/**` (new files, ours) | Local dev stack on PHP 8.4; upstream files untouched | No (ours) |
 | P7 | Done (E0-04) | `.github/workflows/eunoia_ci.yml`, `.github/scripts/eunoia-*`, `.gitleaks.toml` (new files, ours) | CI gates for plugins/eunoia | No (ours) |
 | P8 | Done (E0-05) | `bootstrap/providers.php` (+1 line: `Eunoia\Core\EunoiaServiceProvider::class`) | Upstream registers providers by hand; composer's merge plugin only merges autoload. The aggregator registers every `plugins/eunoia/*/composer.json` → `extra.laravel.providers`, so new Eunoia plugins need no further core edits. Architecture §2 corrected | No (ours) |
+| P9 | Planned (E1-03 gap) | ~25 upstream resources/clusters/pages without Arabic labels (`Customers`, `Vendors`, `Configurations`, `Accounts`, `Invoices` in accounts…) | Filament derives these labels from English class names (no `__()`), and the static label properties are shared through Filament base classes, so a plugin cannot set them per resource. Needs `getModelLabel()`/`getNavigationLabel()` with translations upstream (F11) | Open upstream |
 | P5 | Spike (E3-03) | POS till | Extension point for extra till components, only if none exists | Discuss upstream first |
 
 ## Template

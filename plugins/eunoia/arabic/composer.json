@@ -1,0 +1,22 @@
+{
+    "name": "eunoia/arabic",
+    "description": "Eunoia Arabic quality: glossary overrides of upstream strings, Arabic plurals, amount in words, Levantine dates",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eunoia"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eunoia\\Arabic\\ArabicServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Eunoia\\Arabic\\": "src/"
+        }
+    }
+}
