@@ -7,6 +7,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Webkul\Partner\Models\Partner;
+use Webkul\PluginManager\Models\Plugin;
 use Webkul\PluginManager\Package;
 use Webkul\Support\Models\Company;
 use Webkul\Support\Models\Country;
@@ -14,6 +15,8 @@ use Webkul\Support\Models\Country;
 require_once dirname(__DIR__, 5).'/plugins/webkul/support/tests/Helpers/TestBootstrapHelper.php';
 
 beforeEach(function () {
+    /** Upstream caches installed plugins statically; DB rolls back between tests, so refresh it (as upstream tests do). */
+    Package::$plugins = Plugin::all()->keyBy('name');
     TestBootstrapHelper::ensurePluginInstalled('accounts');
     Package::syncPostgresSequences();
     Company::query()->first()->update(['country_id' => Country::query()->where('code', 'JO')->value('id')]);

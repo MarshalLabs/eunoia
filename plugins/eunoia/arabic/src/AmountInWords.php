@@ -15,26 +15,26 @@ class AmountInWords
     /**
      * Unit forms: singular, dual, plural (3–10), accusative singular (11–99), feminine noun?
      *
-     * @var array<string, array{decimals: int, major: array{0: string, 1: string, 2: string, 3: string, 4: bool}, minor: array{0: string, 1: string, 2: string, 3: string, 4: bool}, en: array{0: string, 1: string}}>
+     * @var array<string, array{decimals: int, major: array{0: string, 1: string, 2: string, 3: string, 4: bool}, minor: array{0: string, 1: string, 2: string, 3: string, 4: bool}, en: array{0: string, 1: string, 2: string, 3: string}}>
      */
     protected const CURRENCIES = [
         'JOD' => [
             'decimals' => 3,
             'major'    => ['دينار', 'ديناران', 'دنانير', 'ديناراً', false],
             'minor'    => ['فلس', 'فلسان', 'فلوس', 'فلساً', false],
-            'en'       => ['Jordanian dinars', 'fils'],
+            'en'       => ['Jordanian dinar', 'Jordanian dinars', 'fils', 'fils'],
         ],
         'ILS' => [
             'decimals' => 2,
             'major'    => ['شيكل', 'شيكلان', 'شواكل', 'شيكلاً', false],
             'minor'    => ['أغورة', 'أغورتان', 'أغورات', 'أغورة', true],
-            'en'       => ['shekels', 'agorot'],
+            'en'       => ['shekel', 'shekels', 'agora', 'agorot'],
         ],
         'USD' => [
             'decimals' => 2,
             'major'    => ['دولار', 'دولاران', 'دولارات', 'دولاراً', false],
             'minor'    => ['سنت', 'سنتان', 'سنتات', 'سنتاً', false],
-            'en'       => ['US dollars', 'cents'],
+            'en'       => ['US dollar', 'US dollars', 'cent', 'cents'],
         ],
     ];
 
@@ -64,11 +64,17 @@ class AmountInWords
         [$major, $minor] = static::split(abs($amount), $config['decimals']);
         $speller = new NumberFormatter('en', NumberFormatter::SPELLOUT);
 
-        $text = $speller->format($major).' '.$config['en'][0];
+        $parts = [];
+
+        if ($major > 0 || $minor === 0) {
+            $parts[] = $speller->format($major).' '.$config['en'][$major === 1 ? 0 : 1];
+        }
 
         if ($minor > 0) {
-            $text .= ' and '.$speller->format($minor).' '.$config['en'][1];
+            $parts[] = $speller->format($minor).' '.$config['en'][$minor === 1 ? 2 : 3];
         }
+
+        $text = implode(' and ', $parts);
 
         return ($amount < 0 ? 'Minus ' : '').ucfirst($text).' only';
     }
@@ -118,8 +124,16 @@ class AmountInWords
         return match (true) {
             $lastTwo >= 3 && $lastTwo <= 10  => "{$spelled} {$plural}",
             $lastTwo >= 11                   => "{$spelled} {$accusative}",
-            default                          => "{$spelled} {$singular}",
+            default                          => static::construct($spelled).' '.$singular,
         };
+    }
+
+    /**
+     * A dual number directly before the counted noun drops its nūn (إضافة): مائتان → مائتا دينار, ألفان → ألفا دينار.
+     */
+    protected static function construct(string $spelled): string
+    {
+        return (string) preg_replace('/(مائت|ألف|مليون|مليار)ان$/u', '$1ا', $spelled);
     }
 
     protected static function spell(int $number, bool $feminineNoun): string

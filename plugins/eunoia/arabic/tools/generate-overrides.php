@@ -12,7 +12,9 @@ $root = dirname(__DIR__, 4);
 $out = dirname(__DIR__).'/resources/overrides/ar';
 
 /** Context: which plugins speak about vendors, and where "session/register" means the POS shift/till. */
-$vendorContext = fn (string $plugin, string $group): bool => $plugin === 'purchases' || preg_match('/(bill|vendor|purchase|refund)/', $group) === 1;
+$vendorContext = fn (string $plugin, string $group, string $key = ''): bool => $plugin === 'purchases' || preg_match('/(bill|vendor|purchase|refund)/', $group) === 1 || preg_match('/(aged-payable|payable)/', $key) === 1;
+/** Keys about both customers and suppliers (partner ledger, shared report groups). */
+$bothContext = fn (string $plugin, string $group, string $key): bool => preg_match('/reporting/', $group) === 1 && preg_match('/(partner-ledger|navigation\.group$|^common\.partner$)/', $key) === 1;
 $posContext = fn (string $plugin): bool => $plugin === 'point-of-sale';
 
 $A = '\p{Arabic}\x{064B}-\x{0652}';
@@ -21,7 +23,7 @@ $word = fn (string $w): string => '/(?<!['.$A.'])'.$w.'(?!['.$A.'])/u';
 /**
  * @return array<string, string> regex => replacement
  */
-$rules = function (string $plugin, string $group, string $key) use ($vendorContext, $posContext, $word): array {
+$rules = function (string $plugin, string $group, string $key) use ($vendorContext, $bothContext, $posContext, $word): array {
     $rules = [];
 
     // JO-03: Jordan's tax is General Sales Tax, never VAT. Other countries' VAT numbers keep their name.
@@ -45,7 +47,16 @@ $rules = function (string $plugin, string $group, string $key) use ($vendorConte
             $word('شريك')          => 'جهة اتصال',
             $word('شركاء')         => 'جهات اتصال',
         ];
-    } elseif ($vendorContext($plugin, $group)) {
+    } elseif ($bothContext($plugin, $group, $key)) {
+        $rules += [
+            $word('للشريك')  => 'للعميل أو المورد',
+            $word('الشريك')  => 'العميل أو المورد',
+            $word('للشركاء') => 'للعملاء والموردين',
+            $word('الشركاء') => 'العملاء والموردين',
+            $word('شريك')    => 'عميل أو مورد',
+            $word('شركاء')   => 'عملاء وموردين',
+        ];
+    } elseif ($vendorContext($plugin, $group, $key)) {
         $rules += [
             $word('للشريك')  => 'للمورد',
             $word('الشريك')  => 'المورد',

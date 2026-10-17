@@ -3,6 +3,7 @@
 namespace Eunoia\Core\Console\Commands;
 
 use Eunoia\Core\Support\CountryProfile;
+use Eunoia\Core\Support\InstalledPlugins;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
@@ -82,6 +83,8 @@ class EunoiaInstallCommand extends Command
                 return self::FAILURE;
             }
         }
+
+        app(InstalledPlugins::class)->forget();
 
         $this->info(__('eunoia-core::install.done', ['command' => 'php artisan eunoia:doctor']));
 
