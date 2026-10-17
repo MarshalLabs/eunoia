@@ -23,6 +23,7 @@ return [
         'filters' => [
             'bill-partner-display-name' => 'اسم مورد الفاتورة',
             'partner'                   => 'المورد',
+            'posted-before'             => 'معتمد قبل',
         ],
     ],
     'infolist' => [
