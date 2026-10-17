@@ -23,6 +23,7 @@ return [
         'filters' => [
             'invoice-partner-display-name' => 'اسم عميل الفاتورة',
             'partner'                      => 'العميل',
+            'posted-before'                => 'معتمد قبل',
         ],
     ],
     'infolist' => [

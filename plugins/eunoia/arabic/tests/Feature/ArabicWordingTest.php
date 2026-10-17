@@ -3,6 +3,7 @@
 use Eunoia\Arabic\ArabicPluralizer;
 use Eunoia\Arabic\ArabicServiceProvider;
 use Eunoia\Core\Support\InstalledPlugins;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Pluralizer;
 use Illuminate\Support\Str;
@@ -68,4 +69,20 @@ it('never touches the word stage (مرحلة)', function () {
         ->implode('');
 
     expect($overrides)->not->toContain('معتمدة المرحلة');
+});
+
+it('replaces every "posted" form, with or without diacritics', function () {
+    app()->setLocale('ar');
+
+    $upstream = collect(glob(base_path('plugins/webkul/*/resources/lang/ar/**/*.php')) ?: [])
+        ->merge(glob(base_path('plugins/webkul/*/resources/lang/ar/*.php')) ?: []);
+
+    $remaining = $upstream->unique()->filter(function (string $file): bool {
+        preg_match('#plugins/webkul/([^/]+)/resources/lang/ar/(.+)\.php$#', $file, $m);
+
+        return collect(Arr::dot((array) __("{$m[1]}::{$m[2]}")))
+            ->contains(fn ($value): bool => is_string($value) && preg_match('/رح[\x{064E}\x{0651}]+ل/u', $value) === 1);
+    });
+
+    expect($remaining->values()->all())->toBe([]);
 });

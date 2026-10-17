@@ -89,7 +89,8 @@ it('renders RTL styles without Google Fonts or Cairo', function () {
 
     expect($html)->not->toContain('fonts.googleapis.com')
         ->and($html)->not->toContain('Cairo')
-        ->and($html)->toContain('.fi-topbar');
+        ->and($html)->not->toContain('row-reverse')
+        ->and($html)->toContain('input[type="email"]');
 });
 
 it('publishes the fonts and passes the doctor fonts check', function () {

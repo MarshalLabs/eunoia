@@ -5,6 +5,7 @@ namespace Eunoia\Arabic;
 use Carbon\Carbon;
 use Eunoia\Arabic\Translation\OverlayLoader;
 use Eunoia\Core\Support\InstalledPlugins;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Panel;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -68,6 +69,12 @@ class ArabicServiceProvider extends PackageServiceProvider
             $table
                 ->defaultDateDisplayFormat(ArabicDates::SHORT_FORMAT)
                 ->defaultDateTimeDisplayFormat(ArabicDates::SHORT_DATETIME_FORMAT);
+        });
+
+        DateTimePicker::configureUsing(function (DateTimePicker $picker): void {
+            $picker->displayFormat(fn (DateTimePicker $component): string => $component->hasTime()
+                ? ArabicDates::SHORT_DATETIME_FORMAT
+                : ArabicDates::SHORT_FORMAT);
         });
 
         Schema::configureUsing(function (Schema $schema): void {

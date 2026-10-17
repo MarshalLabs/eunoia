@@ -32,10 +32,10 @@ $rules = function (string $plugin, string $group, string $key) use ($vendorConte
 
     $rules += [
         // Post an invoice = اعتماد (glossary). Only forms with shadda mean "posted"; مرحلة (stage) is untouched.
-        $word('(و?)(ال)?مُ?رحَّ?ّ?لة')   => '$1$2معتمدة',
-        $word('(و?)(ال)?مُ?رحَّ?ّ?ل')    => '$1$2معتمد',
-        $word('يرحّل')                   => 'يعتمد',
-        $word('(و|ل)?(ال)?ترحيل')        => '$1$2اعتماد',
+        $word('(و?)(ال)?مُ?رح[\x{064E}\x{0651}]+لة') => '$1$2معتمدة',
+        $word('(و?)(ال)?مُ?رح[\x{064E}\x{0651}]+ل')  => '$1$2معتمد',
+        $word('يرحّل')                               => 'يعتمد',
+        $word('(و|ل)?(ال)?ترحيل')                    => '$1$2اعتماد',
     ];
 
     if ($plugin === 'partners' || $plugin === 'contacts') {

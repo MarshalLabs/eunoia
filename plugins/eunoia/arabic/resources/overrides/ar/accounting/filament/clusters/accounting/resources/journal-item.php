@@ -13,5 +13,9 @@ return [
         'filters' => [
             'partner' => 'العميل',
         ],
+        'saved-filters' => [
+            'unposted' => 'غير معتمد',
+            'posted'   => 'معتمد',
+        ],
     ],
 ];

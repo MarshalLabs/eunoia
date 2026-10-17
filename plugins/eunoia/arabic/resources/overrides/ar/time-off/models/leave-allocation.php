@@ -4,6 +4,8 @@
 
 return [
     'log-attributes' => [
-        'last_executed_carryover_date' => 'تاريخ آخر اعتماد منفذ',
+        'last_executed_carryover_date'      => 'تاريخ آخر اعتماد منفذ',
+        'carried_over_days_expiration_date' => 'تاريخ انتهاء الأيام المعتمدة',
+        'expiring_carryover_days'           => 'الأيام المعتمدة المنتهية',
     ],
 ];
