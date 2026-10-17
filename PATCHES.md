@@ -4,7 +4,7 @@ Every change outside `plugins/eunoia/**` and `docs/eunoia/**` must be listed her
 
 | ID | Status | Files | Why | Upstream PR |
 |---|---|---|---|---|
-| P1 | Ready (tested locally 17 Oct 2026 on PostgreSQL 16) | New migration `2026_10_17_000001_widen_currencies_rounding_precision.php` (in `patches/P1-currency-rounding/`; upstream target: `plugins/webkul/support/database/migrations/` + register in `SupportServiceProvider`) | `currencies.rounding` was `decimal(8,2)` → JOD rounding 0.001 saved as 0.00 → POS till float helpers throw. After patch: JOD/KWD/BHD/OMR/TND/IQD/LYD = 0.001, 0 currencies with rounding ≤ 0 | _to open_ |
+| P1 | **Applied (E0-06, 17 Oct 2026)** | `plugins/webkul/support/database/migrations/2026_10_17_000001_widen_currencies_rounding_precision.php` (new, copy of `patches/P1-currency-rounding/`) + 1 line in `plugins/webkul/support/src/SupportServiceProvider.php` (`hasMigrations`) | `currencies.rounding` was `decimal(8,2)` → JOD rounding 0.001 saved as 0.00 → POS till float helpers throw (F1). Now `decimal(12,6)`; data fix restores seed rounding for BHD, CLF, IQD, JOD, KWD, LYD, OMR, TND, UYI, UYW; 0 currencies with rounding ≤ 0 (SQL in progress log). Tests: `plugins/eunoia/core/tests/Feature/CurrencyPrecisionPatchTest.php` | _to open_ |
 | P2 | Planned | `resources/css/app.css` | Remove RTL overrides that double-flip flex rows and swap margins | _to open_ |
 | P3 | Planned | `plugins/webkul/security/src/Data/states.json` | Add Palestinian governorates | _to open_ |
 | P4 | Planned | `AGENTS.md` (replaced), `CLAUDE.md` (new) | Upstream file had wrong framework versions | No (ours) |
