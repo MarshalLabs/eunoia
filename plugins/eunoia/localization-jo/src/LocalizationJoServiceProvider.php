@@ -2,6 +2,8 @@
 
 namespace Eunoia\LocalizationJo;
 
+use Eunoia\LocalizationJo\Console\SyncJordanDataCommand;
+use Eunoia\LocalizationJo\Database\Seeders\JordanChartOfAccountsSeeder;
 use Eunoia\LocalizationJo\Database\Seeders\JordanTaxSeeder;
 use Eunoia\LocalizationJo\Models\JordanTaxProfile;
 use Filament\Panel;
@@ -19,8 +21,12 @@ class LocalizationJoServiceProvider extends PackageServiceProvider
     {
         $package->name(static::$name)
             ->hasTranslations()
+            ->hasCommands([
+                SyncJordanDataCommand::class,
+            ])
             ->hasMigrations([
                 '2026_10_17_100001_create_eunoia_jo_tax_profiles_table',
+                '2026_10_17_100002_create_eunoia_jo_account_profiles_table',
             ])
             ->runsMigrations()
             ->hasDependencies([
@@ -32,8 +38,10 @@ class LocalizationJoServiceProvider extends PackageServiceProvider
                     ->installDependencies()
                     ->runsMigrations()
                     ->endWith(function (InstallCommand $command): void {
+                        app(JordanChartOfAccountsSeeder::class)->run();
                         app(JordanTaxSeeder::class)->run();
 
+                        $command->info(__('eunoia-localization-jo::localization.install.accounts'));
                         $command->info(__('eunoia-localization-jo::localization.install.taxes'));
                     });
             })

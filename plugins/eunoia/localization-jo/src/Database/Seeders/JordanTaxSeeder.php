@@ -36,8 +36,8 @@ class JordanTaxSeeder extends Seeder
         );
 
         $accounts = [
-            TypeTaxUse::SALE->value     => $this->taxAccountId('251000', TypeTaxUse::SALE),
-            TypeTaxUse::PURCHASE->value => $this->taxAccountId('131000', TypeTaxUse::PURCHASE),
+            TypeTaxUse::SALE->value     => $this->taxAccountId([JordanChartOfAccountsSeeder::OUTPUT_GST, '251000'], TypeTaxUse::SALE),
+            TypeTaxUse::PURCHASE->value => $this->taxAccountId([JordanChartOfAccountsSeeder::INPUT_GST, '131000'], TypeTaxUse::PURCHASE),
         ];
 
         $defaults = [];
@@ -96,6 +96,11 @@ class JordanTaxSeeder extends Seeder
 
         if ($tax->invoiceRepartitionLines()->doesntExist()) {
             $this->createRepartitionLines($tax, $accountId);
+        } elseif ($accountId) {
+            DB::table('accounts_tax_partition_lines')
+                ->where('tax_id', $tax->id)
+                ->where('repartition_type', 'tax')
+                ->update(['account_id' => $accountId, 'updated_at' => now()]);
         }
 
         return $tax;
@@ -124,11 +129,13 @@ class JordanTaxSeeder extends Seeder
     }
 
     /**
-     * Upstream tax accounts (251000 Tax Received / 131000 Tax Paid); replaced by the Jordanian chart in E1-08.
+     * First existing account among the codes (Jordanian GST accounts from E1-08, then upstream 251000/131000).
+     *
+     * @param  array<int, string>  $codes
      */
-    protected function taxAccountId(string $code, TypeTaxUse $use): ?int
+    protected function taxAccountId(array $codes, TypeTaxUse $use): ?int
     {
-        return Account::query()->where('code', $code)->value('id')
+        return Account::query()->whereIn('code', $codes)->orderByRaw('case when code = ? then 0 else 1 end', [$codes[0]])->value('id')
             ?? DB::table('accounts_tax_partition_lines')
                 ->join('accounts_taxes', 'accounts_taxes.id', '=', 'accounts_tax_partition_lines.tax_id')
                 ->where('accounts_taxes.type_tax_use', $use->value)
