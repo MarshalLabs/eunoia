@@ -1,0 +1,10 @@
+# gitleaks config for Eunoia (E0-04). Extends the default rules.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Example env files and docs use fake, well-known dev values"
+paths = [
+  '''\.env\.example$''',
+  '''docs/eunoia/.*\.md$''',
+]
