@@ -1,0 +1,52 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": { "name": "Eunoia DS", "version": "0.1.0", "direction": "rtl-first" },
+  "color": {
+    "primary": {
+      "50":  { "$type": "color", "$value": "#F0FDFA", "dark": "#042F2E" },
+      "600": { "$type": "color", "$value": "#0F766E", "dark": "#2DD4BF" },
+      "700": { "$type": "color", "$value": "#115E59", "dark": "#5EEAD4" }
+    },
+    "accent": {
+      "50":  { "$type": "color", "$value": "#FFFBEB", "dark": "#3B2506" },
+      "600": { "$type": "color", "$value": "#B45309", "dark": "#FBBF24" }
+    },
+    "neutral": {
+      "0":   { "$type": "color", "$value": "#FFFFFF", "dark": "#0C0A09" },
+      "50":  { "$type": "color", "$value": "#FAFAF9", "dark": "#1C1917" },
+      "200": { "$type": "color", "$value": "#E7E5E4", "dark": "#44403C" },
+      "500": { "$type": "color", "$value": "#78716C", "dark": "#A8A29E" },
+      "900": { "$type": "color", "$value": "#1C1917", "dark": "#FAFAF9" }
+    },
+    "success": { "600": { "$type": "color", "$value": "#15803D", "dark": "#4ADE80" } },
+    "warning": { "600": { "$type": "color", "$value": "#C2410C", "dark": "#FB923C" } },
+    "danger":  { "600": { "$type": "color", "$value": "#B91C1C", "dark": "#F87171" } },
+    "info":    { "600": { "$type": "color", "$value": "#1D4ED8", "dark": "#60A5FA" } }
+  },
+  "font": {
+    "family": {
+      "ui-ar":  { "$type": "fontFamily", "$value": ["IBM Plex Sans Arabic", "Noto Sans Arabic", "sans-serif"] },
+      "ui-lat": { "$type": "fontFamily", "$value": ["Inter", "system-ui", "sans-serif"] },
+      "doc-ar": { "$type": "fontFamily", "$value": ["Noto Naskh Arabic", "serif"] }
+    },
+    "size": {
+      "display": { "$type": "dimension", "$value": "2.25rem", "lineHeight": "2.75rem" },
+      "h1":      { "$type": "dimension", "$value": "1.75rem", "lineHeight": "2.25rem" },
+      "h2":      { "$type": "dimension", "$value": "1.375rem", "lineHeight": "1.875rem" },
+      "body":    { "$type": "dimension", "$value": "1rem", "lineHeight": "1.625rem" },
+      "small":   { "$type": "dimension", "$value": "0.875rem", "lineHeight": "1.375rem" },
+      "caption": { "$type": "dimension", "$value": "0.75rem", "lineHeight": "1.125rem" },
+      "pos-price": { "$type": "dimension", "$value": "1.5rem", "lineHeight": "2rem" }
+    },
+    "weight": { "regular": 400, "medium": 500, "semibold": 600, "bold": 700 }
+  },
+  "space": { "0": "0", "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "8": "32px", "10": "40px", "12": "48px", "16": "64px" },
+  "radius": { "sm": "6px", "md": "10px", "lg": "14px", "xl": "20px", "full": "9999px" },
+  "shadow": {
+    "card":  "0 1px 2px rgb(28 25 23 / .06), 0 1px 3px rgb(28 25 23 / .10)",
+    "sheet": "0 -8px 24px rgb(28 25 23 / .12)"
+  },
+  "motion": { "fast": "120ms", "base": "200ms", "slow": "320ms", "easing": "cubic-bezier(.2,.8,.2,1)" },
+  "size": { "touch-min": "44px", "pos-key": "56px" },
+  "breakpoint": { "phone": "390px", "tablet": "768px", "desktop": "1280px" }
+}
