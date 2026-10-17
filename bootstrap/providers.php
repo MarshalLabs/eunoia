@@ -68,4 +68,5 @@ return [
     TimesheetServiceProvider::class,
     WebsiteServiceProvider::class,
     PluginManagerServiceProvider::class,
+    Eunoia\Core\EunoiaServiceProvider::class, // Eunoia patch P8: registers plugins/eunoia/* providers
 ];
