@@ -1,0 +1,22 @@
+{
+    "name": "eunoia/theme",
+    "description": "Eunoia design tokens, self-hosted Arabic/Latin fonts and Filament panel theme",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eunoia"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eunoia\\Theme\\ThemeServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Eunoia\\Theme\\": "src/"
+        }
+    }
+}

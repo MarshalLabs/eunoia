@@ -1,0 +1,107 @@
+/*
+ * Eunoia design tokens (docs/eunoia/02-target/05a-design-tokens.json) and panel overrides.
+ * Plain CSS registered as a Filament asset (no Tailwind build step, no upstream file edits).
+ */
+:root {
+    --eunoia-color-primary-50: #F0FDFA;
+    --eunoia-color-primary-600: #0F766E;
+    --eunoia-color-primary-700: #115E59;
+    --eunoia-color-accent-50: #FFFBEB;
+    --eunoia-color-accent-600: #B45309;
+    --eunoia-color-neutral-0: #FFFFFF;
+    --eunoia-color-neutral-50: #FAFAF9;
+    --eunoia-color-neutral-200: #E7E5E4;
+    --eunoia-color-neutral-500: #78716C;
+    --eunoia-color-neutral-900: #1C1917;
+    --eunoia-color-success-600: #15803D;
+    --eunoia-color-warning-600: #C2410C;
+    --eunoia-color-danger-600: #B91C1C;
+    --eunoia-color-info-600: #1D4ED8;
+
+    --eunoia-font-ui: 'IBM Plex Sans Arabic', 'Inter', 'Noto Sans Arabic', system-ui, sans-serif;
+    --eunoia-font-numbers: 'Inter', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+
+    --eunoia-font-display: 2.25rem;
+    --eunoia-font-display-lh: 2.75rem;
+    --eunoia-font-h1: 1.75rem;
+    --eunoia-font-h1-lh: 2.25rem;
+    --eunoia-font-h2: 1.375rem;
+    --eunoia-font-h2-lh: 1.875rem;
+    --eunoia-font-body: 1rem;
+    --eunoia-font-body-lh: 1.625rem;
+    --eunoia-font-small: 0.875rem;
+    --eunoia-font-small-lh: 1.375rem;
+    --eunoia-font-caption: 0.75rem;
+    --eunoia-font-caption-lh: 1.125rem;
+    --eunoia-font-pos-price: 1.5rem;
+    --eunoia-font-pos-price-lh: 2rem;
+
+    --eunoia-radius-sm: 6px;
+    --eunoia-radius-md: 10px;
+    --eunoia-radius-lg: 14px;
+    --eunoia-radius-xl: 20px;
+    --eunoia-radius-full: 9999px;
+
+    --eunoia-shadow-card: 0 1px 2px rgb(28 25 23 / .06), 0 1px 3px rgb(28 25 23 / .10);
+    --eunoia-shadow-sheet: 0 -8px 24px rgb(28 25 23 / .12);
+
+    --eunoia-motion-fast: 120ms;
+    --eunoia-motion-base: 200ms;
+    --eunoia-motion-slow: 320ms;
+    --eunoia-motion-easing: cubic-bezier(.2, .8, .2, 1);
+
+    --eunoia-touch-min: 44px;
+    --eunoia-pos-key: 56px;
+}
+
+.dark {
+    --eunoia-color-primary-50: #042F2E;
+    --eunoia-color-primary-600: #2DD4BF;
+    --eunoia-color-primary-700: #5EEAD4;
+    --eunoia-color-accent-50: #3B2506;
+    --eunoia-color-accent-600: #FBBF24;
+    --eunoia-color-neutral-0: #0C0A09;
+    --eunoia-color-neutral-50: #1C1917;
+    --eunoia-color-neutral-200: #44403C;
+    --eunoia-color-neutral-500: #A8A29E;
+    --eunoia-color-neutral-900: #FAFAF9;
+    --eunoia-color-success-600: #4ADE80;
+    --eunoia-color-warning-600: #FB923C;
+    --eunoia-color-danger-600: #F87171;
+    --eunoia-color-info-600: #60A5FA;
+}
+
+/* Our fonts win over upstream's Cairo rule (which also uses !important). */
+html body,
+html body.fi-body,
+html .fi-body {
+    font-family: var(--eunoia-font-ui) !important;
+}
+
+/* Arabic needs ~10 % more line height than Latin. */
+html[lang="ar"] body {
+    line-height: 1.65;
+}
+
+/* Money and numbers line up in tables. */
+.fi-ta-text-item,
+.fi-in-text-item,
+.eunoia-money,
+.eunoia-num {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Visible focus ring: 2 px primary with 2 px offset (design system §8). */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--eunoia-color-primary-600);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
