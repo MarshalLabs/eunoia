@@ -13,6 +13,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && install-php-extensions calendar sockets pdo_pgsql pgsql pdo_mysql intl gd zip bcmath pcntl exif redis opcache
 
+# Node 22 for upstream JS parity tests and `npx jofotara-kit validate` inside the container.
+COPY --from=node:22-bookworm-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:22-bookworm-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+
 COPY php.ini /usr/local/etc/php/conf.d/zz-eunoia.ini
 
 RUN (getent group ${GID} || groupadd -g ${GID} eunoia) \
