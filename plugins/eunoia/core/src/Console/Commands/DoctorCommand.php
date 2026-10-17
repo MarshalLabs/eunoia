@@ -2,8 +2,8 @@
 
 namespace Eunoia\Core\Console\Commands;
 
-use Eunoia\Core\Doctor\CheckResult;
 use Eunoia\Core\Doctor\Checks\QueueWorkerCheck;
+use Eunoia\Core\Doctor\CheckStatus;
 use Eunoia\Core\Doctor\Doctor;
 use Eunoia\Core\Doctor\DoctorCheck;
 use Illuminate\Console\Command;
@@ -22,23 +22,16 @@ class DoctorCommand extends Command
             }
         });
 
-        $icons = [
-            CheckResult::OK   => '✓',
-            CheckResult::WARN => '!',
-            CheckResult::FAIL => '✕',
-            CheckResult::SKIP => '–',
-        ];
-
         $this->table(
             [__('eunoia-core::doctor.columns.check'), __('eunoia-core::doctor.columns.status'), __('eunoia-core::doctor.columns.details')],
             array_map(fn (array $row): array => [
                 $row['check']->label(),
-                $icons[$row['result']->status].' '.__('eunoia-core::doctor.status.'.$row['result']->status),
+                $row['result']->status->icon().' '.$row['result']->status->getLabel(),
                 $row['result']->message,
             ], $results),
         );
 
-        $failed = array_filter($results, fn (array $row): bool => $row['result']->status === CheckResult::FAIL);
+        $failed = array_filter($results, fn (array $row): bool => $row['result']->status === CheckStatus::Fail);
 
         return $failed ? self::FAILURE : self::SUCCESS;
     }

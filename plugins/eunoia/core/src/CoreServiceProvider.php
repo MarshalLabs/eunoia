@@ -30,12 +30,12 @@ class CoreServiceProvider extends PackageServiceProvider
                 DoctorCommand::class,
                 LintRtlCommand::class,
             ])
-            ->hasInstallCommand(function (InstallCommand $command) {
+            ->hasInstallCommand(function (InstallCommand $command): void {
                 $command
                     ->installDependencies()
                     ->runsMigrations();
             })
-            ->hasUninstallCommand(function (UninstallCommand $command) {});
+            ->hasUninstallCommand(function (UninstallCommand $command): void {});
     }
 
     public function packageRegistered(): void

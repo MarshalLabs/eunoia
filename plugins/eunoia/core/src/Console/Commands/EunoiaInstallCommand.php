@@ -5,6 +5,8 @@ namespace Eunoia\Core\Console\Commands;
 use Eunoia\Core\Support\CountryProfile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 use Webkul\PluginManager\Models\Plugin;
 
 /**
@@ -31,13 +33,19 @@ class EunoiaInstallCommand extends Command
             return self::FAILURE;
         }
 
+        if (! Schema::hasTable('plugins')) {
+            $this->error(__('eunoia-core::install.erp_missing', ['command' => 'php artisan erp:install --country='.$country]));
+
+            return self::FAILURE;
+        }
+
         $upstream = CountryProfile::upstreamPlugins($country);
         $eunoia = array_values(array_filter(CountryProfile::eunoiaPlugins($country), fn (string $name): bool => $this->hasInstallCommand($name)));
         $missing = array_values(array_diff(CountryProfile::eunoiaPlugins($country), $eunoia));
 
         $this->info(__('eunoia-core::install.plan', ['country' => $country]));
-        $this->line('  upstream: '.implode(', ', $upstream));
-        $this->line('  eunoia:   '.implode(', ', $eunoia));
+        $this->line('  '.__('eunoia-core::install.upstream_label').': '.implode(', ', $upstream));
+        $this->line('  '.__('eunoia-core::install.eunoia_label').': '.implode(', ', $eunoia));
 
         if ($missing) {
             $this->line('  '.__('eunoia-core::install.not_available').': '.implode(', ', $missing));
@@ -46,6 +54,9 @@ class EunoiaInstallCommand extends Command
         if ($this->option('dry-run')) {
             return self::SUCCESS;
         }
+
+        /** Upstream install commands prompt ("Reseed/Skip") unless the shared input is non-interactive. */
+        $this->input->setInteractive(false);
 
         foreach ([...$upstream, ...$eunoia] as $name) {
             if ($this->isInstalled($name)) {
@@ -56,9 +67,16 @@ class EunoiaInstallCommand extends Command
 
             $this->info(__('eunoia-core::install.installing', ['plugin' => $name]));
 
-            $exitCode = Artisan::call("{$name}:install", ['--no-interaction' => true], $this->output);
+            try {
+                $exitCode = Artisan::call("{$name}:install", ['--no-interaction' => true], $this->output);
+            } catch (Throwable $e) {
+                $this->error(__('eunoia-core::install.failed', ['plugin' => $name]).' '.$e->getMessage());
 
-            if ($exitCode !== self::SUCCESS) {
+                return self::FAILURE;
+            }
+
+            /** Upstream install commands return null on success and on some failures, so also check the result. */
+            if (($exitCode !== self::SUCCESS) || ! $this->isInstalled($name)) {
                 $this->error(__('eunoia-core::install.failed', ['plugin' => $name]));
 
                 return self::FAILURE;

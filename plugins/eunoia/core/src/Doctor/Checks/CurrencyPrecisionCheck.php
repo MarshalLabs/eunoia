@@ -24,7 +24,7 @@ class CurrencyPrecisionCheck implements DoctorCheck
             return CheckResult::fail(__('eunoia-core::doctor.messages.currency_missing', ['currency' => 'JOD']));
         }
 
-        if ((int) $jod->decimal_places !== 3 || abs((float) $jod->rounding - 0.001) > 1e-9) {
+        if ((int) $jod->decimal_places !== 3 || float_compare((float) $jod->rounding, 0.001, precisionDigits: 6) !== 0) {
             return CheckResult::fail(__('eunoia-core::doctor.messages.currency_wrong', [
                 'currency' => 'JOD',
                 'decimals' => $jod->decimal_places,

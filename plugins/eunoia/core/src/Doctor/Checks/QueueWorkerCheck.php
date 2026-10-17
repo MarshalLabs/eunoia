@@ -29,6 +29,16 @@ class QueueWorkerCheck implements DoctorCheck
 
     public function run(): CheckResult
     {
+        $connection = (string) config('queue.default');
+
+        if ($connection === 'sync') {
+            return CheckResult::warn(__('eunoia-core::doctor.messages.queue_sync'));
+        }
+
+        if (config('cache.default') === 'array') {
+            return CheckResult::warn(__('eunoia-core::doctor.messages.queue_array_cache'));
+        }
+
         $token = (string) Str::uuid();
         $key = QueueHeartbeat::cacheKey($token);
 
@@ -40,14 +50,14 @@ class QueueWorkerCheck implements DoctorCheck
             if (Cache::get($key)) {
                 Cache::forget($key);
 
-                return CheckResult::ok(__('eunoia-core::doctor.messages.queue_ok', ['connection' => config('queue.default')]));
+                return CheckResult::ok(__('eunoia-core::doctor.messages.queue_ok', ['connection' => $connection]));
             }
 
             usleep(250_000);
         } while (microtime(true) < $deadline);
 
         return CheckResult::fail(__('eunoia-core::doctor.messages.queue_timeout', [
-            'connection' => config('queue.default'),
+            'connection' => $connection,
             'seconds'    => $this->timeout,
             'command'    => 'php artisan queue:work --queue=jofotara,messages,default',
         ]));

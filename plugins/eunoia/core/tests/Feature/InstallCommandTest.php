@@ -3,26 +3,28 @@
 use Webkul\PluginManager\Models\Plugin;
 
 require_once dirname(__DIR__, 5).'/plugins/webkul/support/tests/Helpers/TestBootstrapHelper.php';
+
 beforeEach(function () {
     TestBootstrapHelper::ensurePluginInstalled('point-of-sale');
 });
 
 it('installs eunoia core for Jordan', function () {
-    $this->artisan('eunoia:install', ['--country' => 'JO', '--no-interaction' => true])
+    $this->artisan('eunoia:install', ['--country' => 'JO'])
         ->assertSuccessful();
 
     expect(Plugin::query()->where('name', 'eunoia-core')->value('is_installed'))->toBeTruthy();
 });
 
-it('is safe to run twice', function () {
-    $this->artisan('eunoia:install', ['--country' => 'JO', '--no-interaction' => true])->assertSuccessful();
-    $this->artisan('eunoia:install', ['--country' => 'JO', '--no-interaction' => true])->assertSuccessful();
+it('skips plugins that are already installed on a second run', function () {
+    $this->artisan('eunoia:install', ['--country' => 'JO'])->assertSuccessful();
 
-    expect(Plugin::query()->where('name', 'eunoia-core')->count())->toBe(1);
+    $this->artisan('eunoia:install', ['--country' => 'JO'])
+        ->expectsOutputToContain(__('eunoia-core::install.already_installed', ['plugin' => 'eunoia-core']))
+        ->assertSuccessful();
 });
 
 it('rejects an unsupported country', function () {
-    $this->artisan('eunoia:install', ['--country' => 'XX', '--no-interaction' => true])
+    $this->artisan('eunoia:install', ['--country' => 'XX'])
         ->assertFailed();
 });
 

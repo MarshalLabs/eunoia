@@ -11,17 +11,30 @@ use Illuminate\Support\ServiceProvider;
  */
 class EunoiaServiceProvider extends ServiceProvider
 {
+    /**
+     * @var array<int, string>
+     */
+    protected array $missing = [];
+
     public function register(): void
     {
-        foreach (static::discoverProviders(base_path('plugins/eunoia')) as $provider) {
+        foreach (static::discoverProviders(base_path('plugins/eunoia'), $this->missing) as $provider) {
             $this->app->register($provider);
         }
     }
 
+    public function boot(): void
+    {
+        foreach ($this->missing as $provider) {
+            logger()->warning("Eunoia provider {$provider} is listed in a plugins/eunoia composer.json but its class was not found (run composer dump-autoload).");
+        }
+    }
+
     /**
+     * @param  array<int, string>  $missing  receives provider names whose class does not exist
      * @return array<int, class-string>
      */
-    public static function discoverProviders(string $root): array
+    public static function discoverProviders(string $root, array &$missing = []): array
     {
         $files = glob($root.'/*/composer.json') ?: [];
 
@@ -35,6 +48,8 @@ class EunoiaServiceProvider extends ServiceProvider
             foreach ($composer['extra']['laravel']['providers'] ?? [] as $provider) {
                 if (class_exists($provider)) {
                     $providers[] = $provider;
+                } else {
+                    $missing[] = $provider;
                 }
             }
         }
