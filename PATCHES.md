@@ -8,6 +8,7 @@ Every change outside `plugins/eunoia/**` and `docs/eunoia/**` must be listed her
 | P2 | Planned | `resources/css/app.css` | Remove RTL overrides that double-flip flex rows and swap margins | _to open_ |
 | P3 | Planned | `plugins/webkul/security/src/Data/states.json` | Add Palestinian governorates | _to open_ |
 | P4 | Planned | `AGENTS.md` (replaced), `CLAUDE.md` (new) | Upstream file had wrong framework versions | No (ours) |
+| P6 | Done (E0-03) | `docker-compose.eunoia.yml`, `docker/eunoia/**` (new files, ours) | Local dev stack on PHP 8.4; upstream files untouched | No (ours) |
 | P5 | Spike (E3-03) | POS till | Extension point for extra till components, only if none exists | Discuss upstream first |
 
 ## Template

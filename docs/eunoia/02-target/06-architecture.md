@@ -180,7 +180,7 @@ Golden tests render 5 invoices (short, long, multi-tax, credit note, mixed AR/EN
 | **staging** | 1 small VPS | Copy of demo + pilot test company | mock or live with test TIN | Meta test number | sandbox |
 | **production** | VPS(s), one container + DB per shop | Real | live | live | live |
 
-Local stack (`docker-compose.eunoia.yml`): `app` (PHP 8.4-fpm + nginx), `queue` (`php artisan queue:work --queue=jofotara,messages,default`), `scheduler`, `postgres:16`, `redis:7`, `mailpit`, `jofotara-mock` (`node` running `npx jofotara-kit serve --port 8080`).
+Local stack (`docker-compose.eunoia.yml`): `app` (PHP 8.4 CLI with `artisan serve` for local dev; fpm + nginx for staging/prod — see `docker/production`), `queue` (`php artisan queue:work --queue=jofotara,messages,default`), `scheduler`, `postgres:16`, `redis:7`, `mailpit`, `jofotara-mock` (`node` running `npx jofotara-kit serve --port 8080`).
 
 ## 9. Quality gates (CI)
 

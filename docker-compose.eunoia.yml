@@ -1,0 +1,94 @@
+# Eunoia local stack (E0-03) — see docs/eunoia/02-target/06-architecture.md §8
+# Usage: docker compose -f docker-compose.eunoia.yml up -d
+# All ports bind to 127.0.0.1 only. Host ports are shifted where a native service may already run (Postgres 5433, Redis 6380).
+x-app: &app
+  build:
+    context: ./docker/eunoia
+    args:
+      UID: ${EUNOIA_UID:-1000}
+      GID: ${EUNOIA_GID:-1000}
+  image: eunoia/app:dev
+  volumes:
+    - .:/var/www/html
+  # Only host/port wiring here. DB name/user/password come from the mounted .env
+  # (or .env.testing for Pest), so tests never hit the dev database.
+  environment:
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    DB_PORT: 5432
+    REDIS_HOST: redis
+    MAIL_HOST: mailpit
+    MAIL_PORT: 1025
+    JOFOTARA_BASE_URL: http://jofotara-mock:8080
+    PHP_CLI_SERVER_WORKERS: 4
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  app:
+    <<: *app
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+
+  queue:
+    <<: *app
+    command: ["php", "artisan", "queue:work", "--queue=jofotara,messages,default", "--tries=3", "--sleep=2"]
+    restart: unless-stopped
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-eunoia}
+      POSTGRES_USER: ${DB_USERNAME:-eunoia}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-eunoia}
+    ports:
+      - "127.0.0.1:${FORWARD_DB_PORT:-5433}:5432"
+    volumes:
+      - eunoia-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-eunoia} -d ${DB_DATABASE:-eunoia}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:${FORWARD_REDIS_PORT:-6380}:6379"
+    volumes:
+      - eunoia-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:${FORWARD_MAILPIT_PORT:-1025}:1025"
+      - "127.0.0.1:${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+
+  jofotara-mock:
+    image: node:22-alpine
+    working_dir: /mock
+    command: ["npx", "--yes", "jofotara-kit@0.3.0", "serve", "--port", "8080", "--host", "0.0.0.0"]
+    ports:
+      - "127.0.0.1:${JOFOTARA_MOCK_PORT:-8080}:8080"
+    volumes:
+      - eunoia-npm:/root/.npm
+
+volumes:
+  eunoia-pg:
+  eunoia-redis:
+  eunoia-npm:

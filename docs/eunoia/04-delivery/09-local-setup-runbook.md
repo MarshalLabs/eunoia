@@ -73,11 +73,32 @@ npx jofotara-kit serve --port 8080
 ```
 Open `http://127.0.0.1:8000/admin/login?lang=ar` → admin@example.com / admin123.
 
-## Option B — Docker (recommended once E0-03 is done)
+## Option B — Docker (recommended; required when the host PHP is 8.5)
+> **17 Oct 2026, Omarchy/Arch with PHP 8.5:** `composer install` fails natively (`phpoffice/phpspreadsheet 1.30.x` requires `php <8.5`).
+> Do not work around it with `--ignore-platform-req`; use this stack (PHP 8.4). Your user must be in the `docker` group:
+> `sudo usermod -aG docker $USER && sudo systemctl enable --now docker.socket` (then log in again).
+
+Stack: `app` (PHP 8.4 CLI, `artisan serve` on :8000), `queue` (`jofotara,messages,default`), `scheduler`, `postgres:16` (host port **5433**, so a native Postgres on 5432 doesn't clash), `redis:7` (host **6380**), `mailpit` (UI :8025), `jofotara-mock` (`npx jofotara-kit serve` on :8080). The container runs as UID 1000, so files it writes stay yours (and composer is never root — F25).
+
 ```bash
-docker compose -f docker-compose.eunoia.yml up -d
-docker compose -f docker-compose.eunoia.yml exec app php artisan eunoia:install --country=JO
+cp .env.example .env    # then set the values from step 4, with DB_HOST=postgres, MAIL_MAILER=smtp, MAIL_HOST=mailpit, MAIL_PORT=1025
+echo 'COMPOSE_FILE=docker-compose.eunoia.yml' >> .env   # so plain `docker compose` uses our file
+docker compose build app
+docker compose up -d postgres redis mailpit jofotara-mock
+docker compose run --rm app composer install
+docker compose run --rm app php artisan key:generate
+npm ci && npm run build                                 # on the host (Node 22+)
+docker compose run --rm app php artisan filament:assets
+docker compose run --rm app php artisan erp:install --no-interaction --admin-name=Admin \
+  --admin-email=admin@example.com --admin-password=admin123 --country=JO
+docker compose run --rm app php artisan point-of-sale:install --no-interaction
+docker compose run --rm app php artisan eunoia:install --country=JO   # once eunoia/core exists (E0-05)
+docker compose up -d
 ```
+Daily: `docker compose up -d` → http://127.0.0.1:8000/admin/login?lang=ar. Run any artisan/pest/pint command with `docker compose exec app …`.
+Tests: `cp .env .env.testing`, set `APP_ENV=testing` and `DB_DATABASE=eunoia_test`, then `docker compose exec postgres psql -U eunoia -d eunoia -c 'CREATE DATABASE eunoia_test OWNER eunoia;'`. Never put DB names in compose `environment`/`env_file` — real env vars override `.env.testing` and Pest would rebuild your dev DB.
+Reinstall from scratch: drop/recreate the DB **and** `rm storage/installed` (the installer's "already installed" marker).
+psql from the host: `psql -h 127.0.0.1 -p 5433 -U eunoia eunoia` (password `eunoia`).
 
 ## Verify the install (5-minute check)
 | Check | Expected | What I saw on 17 Oct |
