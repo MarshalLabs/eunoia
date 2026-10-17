@@ -7,6 +7,6 @@ return [
     'doctor' => [
         'fonts_missing'    => 'الخطوط المستضافة محلياً غير منشورة. شغّل: :command',
         'fonts_incomplete' => 'عدد ملفات الخطوط المنشورة :count فقط (المتوقع 12).',
-        'fonts_ok'         => ':count ملف خط مستضاف محلياً (IBM Plex Sans Arabic و Inter) دون خطوط Google.',
+        'fonts_ok'         => ':count ملف خط مستضاف محلياً، دون أي طلب لخطوط من مواقع خارجية.',
     ],
 ];
