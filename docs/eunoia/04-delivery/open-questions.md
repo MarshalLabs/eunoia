@@ -5,7 +5,7 @@ Agents and humans add questions here instead of guessing. Close a question with 
 | ID | Question | Who can answer | Status |
 |---|---|---|---|
 | Q1 | Is JoFotara "report after issue" or "validate before sharing"? Is there an official sandbox? | ISTD technical guide v1.4, accountant, live test | Open |
-| Q2 | **NEEDS ACCOUNTANT.** Full list of reduced GST rates and which goods (perfume oils, alcohol, bottles) fall under which rate. Implemented for now (E1-07): 16 % general, 4 % and 1 % reduced (from the PRD examples), 0 % zero-rated (JoFotara `O`), exempt (`Z`), inactive "special sales tax" placeholder | Accountant | Open |
+| Q2 | **NEEDS ACCOUNTANT.** Full list of reduced GST rates and which goods (perfume oils, alcohol, bottles) fall under which rate. JoFotara accepts S-category rates 1, 2, 3, 4, 5, 7, 8, 10, 16 % (jofotara-kit rule JOF-LIN-009). Implemented for now (E1-07): 16 % general, 4 % and 1 % reduced (from the PRD examples), 0 % zero-rated (JoFotara `O`), exempt (`Z`), inactive "special sales tax" placeholder | Accountant | Open |
 | Q3 | Retail POS: one JoFotara invoice per sale, or is a summary allowed? Buyer-ID threshold today? | ISTD / accountant | Open |
 | Q4 | WhatsApp: Meta Cloud API direct or a BSP? Monthly cost per shop? | Pricing check | Open |
 | Q5 | Subscription payments: which gateway (PayTabs, HyperPay, other) or a foreign entity? | Gateway sales calls | Open |
@@ -15,3 +15,5 @@ Agents and humans add questions here instead of guessing. Close a question with 
 | Q9 | **NEEDS ACCOUNTANT.** Jordanian retail shelf prices usually include GST. Should POS/products default to tax-included prices (`price_include_override`)? E1-07 seeds tax-excluded taxes like upstream | Accountant / shops | Open |
 | Q10 | **NEEDS ACCOUNTANT.** Which special sales tax (ضريبة المبيعات الخاصة) rates/goods apply to perfume shops (alcohol-based perfumes?) — placeholder tax is inactive at 0 % | Accountant | Open |
 | Q11 | **NEEDS ACCOUNTANT.** Review the Jordanian chart of accounts (E1-08): Arabic names of the 51 upstream accounts and 13 added accounts (output/input GST 253000/133000, SSC 255000, income tax withheld 254000, perfume stock 110110–110130, perfume/blend revenue 401000/402000, CliQ 101405…). Is a full Jordanian numbering (1/2/3/4/5 classes) required, or is this structure acceptable? | Accountant | Open |
+| Q12 | **NEEDS ACCOUNTANT.** Invoice type code cash (x1x) vs receivable (x2x): we use cash when due date ≤ invoice date (POS, immediate payment), receivable otherwise. Correct for partially paid invoices? | Accountant / ISTD | Open |
+| Q13 | **NEEDS ISTD.** Does a rejected submission consume its ICV? We keep the same ICV + UUID and resend after correction, so the counter stays gap-free | ISTD guide / live test | Open |

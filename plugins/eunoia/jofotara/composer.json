@@ -1,0 +1,22 @@
+{
+    "name": "eunoia/jofotara",
+    "description": "Eunoia JoFotara (Jordan ISTD e-invoicing): UBL 2.1 builder, outbox, client, lock, dashboard",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eunoia"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eunoia\\JoFotara\\JoFotaraServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Eunoia\\JoFotara\\": "src/"
+        }
+    }
+}
