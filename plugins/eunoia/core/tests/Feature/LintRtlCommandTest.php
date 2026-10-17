@@ -11,7 +11,7 @@ it('fails on physical direction classes and passes on logical ones', function ()
     File::put(base_path("{$dir}/good.blade.php"), '<div class="ms-4 pe-2 text-start">ok</div>');
     $this->artisan('eunoia:lint-rtl', ['paths' => [$dir]])->assertSuccessful();
 
-    File::put(base_path("{$dir}/bad.blade.php"), '<div class="ml-4 text-right">bad</div>');
+    File::put(base_path("{$dir}/bad.blade.php"), '<div class="ml-4 text-right">bad</div>'); // rtl-lint: ignore (fixture)
     $this->artisan('eunoia:lint-rtl', ['paths' => [$dir]])->assertFailed();
 
     File::deleteDirectory(base_path($dir));
