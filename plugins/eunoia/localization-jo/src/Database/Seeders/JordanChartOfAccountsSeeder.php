@@ -13,7 +13,8 @@ use Webkul\Account\Models\Account;
  *
  * Keeps upstream codes (journals, settings and POS reference them), gives every upstream account an Arabic
  * name (English kept in eunoia_jo_account_profiles) and adds Jordan-specific accounts. An account whose name
- * was changed by the user is not renamed. Idempotent.
+ * was changed by the user is not renamed. Every account with an upstream code is translated (multi-company
+ * installs share the chart through the companies pivot). Idempotent.
  */
 class JordanChartOfAccountsSeeder extends Seeder
 {
@@ -105,21 +106,17 @@ class JordanChartOfAccountsSeeder extends Seeder
     {
         DB::transaction(function (): void {
             foreach (static::UPSTREAM as $code => [$arabic, $english]) {
-                $account = Account::query()->where('code', $code)->first();
+                foreach (Account::withoutGlobalScopes()->where('code', $code)->get() as $account) {
+                    if ($account->name === $english) {
+                        $account->forceFill(['name' => $arabic])->save();
+                    }
 
-                if (! $account) {
-                    continue;
+                    JordanAccountProfile::query()->updateOrCreate(['account_id' => $account->id], ['name_en' => $english, 'is_jordan_specific' => false]);
                 }
-
-                if ($account->name === $english) {
-                    $account->forceFill(['name' => $arabic])->save();
-                }
-
-                JordanAccountProfile::query()->updateOrCreate(['account_id' => $account->id], ['name_en' => $english, 'is_jordan_specific' => false]);
             }
 
             foreach (static::JORDAN as $code => [$arabic, $english, $type, $reconcile]) {
-                $account = Account::query()->firstOrNew(['code' => $code]);
+                $account = Account::withoutGlobalScopes()->firstOrNew(['code' => $code]);
 
                 if (! $account->exists) {
                     $account->forceFill([

@@ -19,20 +19,52 @@ class PhoneNumber
             return null;
         }
 
-        $digits = preg_replace('/[^\d+]/', '', $input);
-        $digits = preg_replace('/^00/', '+', (string) $digits);
+        /** Extensions ("ext 12", "x12", "#12") and short codes ("911") are left as typed. */
+        if (preg_match('/(ext|x|#)\s*\d+\s*$/i', $input)) {
+            return trim($input);
+        }
+
+        $digits = (string) preg_replace('/\(0\)/', '', $input);
+        $digits = (string) preg_replace('/[^\d+]/', '', $digits);
+        $digits = (string) preg_replace('/^00/', '+', $digits);
+
+        if (strlen(ltrim($digits, '+')) < 7) {
+            return trim($input);
+        }
 
         if (str_starts_with($digits, '+')) {
-            return '+'.preg_replace('/\D/', '', $digits);
+            $digits = '+'.preg_replace('/\D/', '', $digits);
+
+            foreach (static::CALLING_CODES as $code) {
+                if (str_starts_with($digits, '+'.$code.'0')) {
+                    return '+'.$code.substr($digits, strlen($code) + 2);
+                }
+            }
+
+            return $digits;
         }
 
         $code = static::CALLING_CODES[strtoupper($country)] ?? static::CALLING_CODES['JO'];
 
-        if (str_starts_with($digits, $code) && strlen($digits) >= strlen($code) + 8) {
-            return '+'.$digits;
+        foreach (static::CALLING_CODES as $knownCode) {
+            if (str_starts_with($digits, $knownCode) && in_array(strlen($digits) - strlen($knownCode), [8, 9], true)) {
+                return '+'.$digits;
+            }
         }
 
-        return '+'.$code.ltrim($digits, '0');
+        $national = ltrim($digits, '0');
+
+        /** A national number is 8 (landline) or 9 (mobile) digits; anything else is probably international. */
+        if (! in_array(strlen($national), [8, 9], true)) {
+            return '+'.$national;
+        }
+
+        /** 059x / 056x are Palestinian mobile prefixes (Jawwal, Ooredoo); Jordanian mobiles are 077/078/079. */
+        if (strlen($national) === 9 && preg_match('/^5[69]/', $national)) {
+            return '+'.static::CALLING_CODES['PS'].$national;
+        }
+
+        return '+'.$code.$national;
     }
 
     /**

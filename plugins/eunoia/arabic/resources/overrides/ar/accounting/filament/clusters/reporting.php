@@ -4,21 +4,21 @@
 
 return [
     'common' => [
-        'partner' => 'العميل',
+        'partner' => 'العميل أو المورد',
     ],
     'pages' => [
         'partner-ledger' => [
             'navigation' => [
-                'title' => 'دفتر الأستاذ للعملاء',
-                'group' => 'تقارير العملاء',
+                'title' => 'دفتر الأستاذ للعملاء والموردين',
+                'group' => 'تقارير العملاء والموردين',
             ],
             'filters' => [
-                'partners' => 'العملاء',
+                'partners' => 'العملاء والموردين',
             ],
         ],
         'aged-receivable' => [
             'navigation' => [
-                'group' => 'تقارير العملاء',
+                'group' => 'تقارير العملاء والموردين',
             ],
             'filters' => [
                 'partners' => 'العملاء',
@@ -26,10 +26,10 @@ return [
         ],
         'aged-payable' => [
             'navigation' => [
-                'group' => 'تقارير العملاء',
+                'group' => 'تقارير العملاء والموردين',
             ],
             'filters' => [
-                'partners' => 'العملاء',
+                'partners' => 'الموردون',
             ],
         ],
     ],

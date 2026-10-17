@@ -17,6 +17,10 @@ it('writes JOD amounts in Arabic words (AR-05)', function (float $amount, string
     'ten fils'     => [0.01, 'فقط عشرة فلوس لا غير'],
     'zero'         => [0, 'فقط صفر دينار لا غير'],
     'rounds fils'  => [1.2345, 'فقط دينار واحد ومائتان وخمسة وثلاثون فلساً لا غير'],
+    'two hundred'  => [200, 'فقط مائتا دينار لا غير'],
+    'two thousand' => [2000, 'فقط ألفا دينار لا غير'],
+    'two million'  => [2000000, 'فقط مليونا دينار لا غير'],
+    '1200'         => [1200, 'فقط ألف ومائتا دينار لا غير'],
 ]);
 
 it('writes ILS with feminine agorot', function (float $amount, string $words) {
@@ -37,7 +41,10 @@ it('handles negative amounts as a credit', function () {
 });
 
 it('writes English words for English documents', function () {
-    expect(AmountInWords::english(3.765, 'JOD'))->toBe('Three Jordanian dinars and seven hundred sixty-five fils only');
+    expect(AmountInWords::english(3.765, 'JOD'))->toBe('Three Jordanian dinars and seven hundred sixty-five fils only')
+        ->and(AmountInWords::english(1, 'JOD'))->toBe('One Jordanian dinar only')
+        ->and(AmountInWords::english(0.5, 'JOD'))->toBe('Five hundred fils only')
+        ->and(AmountInWords::english(1.01, 'USD'))->toBe('One US dollar and one cent only');
 });
 
 it('rejects unknown currencies', function () {

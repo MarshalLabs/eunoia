@@ -5,9 +5,11 @@ use Eunoia\LocalizationJo\Enums\JoFotaraTaxCategory;
 use Eunoia\LocalizationJo\Enums\JordanTaxKind;
 use Eunoia\LocalizationJo\Models\JordanTaxProfile;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Webkul\Account\Enums\TypeTaxUse;
 use Webkul\Account\Models\Tax;
 use Webkul\Account\Settings\TaxesSettings;
+use Webkul\PluginManager\Models\Plugin;
 use Webkul\PluginManager\Package;
 use Webkul\Support\Models\Company;
 use Webkul\Support\Models\Country;
@@ -15,6 +17,8 @@ use Webkul\Support\Models\Country;
 require_once dirname(__DIR__, 5).'/plugins/webkul/support/tests/Helpers/TestBootstrapHelper.php';
 
 beforeEach(function () {
+    /** Upstream caches installed plugins statically; DB rolls back between tests, so refresh it (as upstream tests do). */
+    Package::$plugins = Plugin::all()->keyBy('name');
     TestBootstrapHelper::ensurePluginInstalled('accounts');
     Package::syncPostgresSequences();
     Artisan::call('eunoia-localization-jo:install', ['--no-interaction' => true]);
@@ -115,4 +119,34 @@ it('leaves non-Jordanian companies alone', function () {
     app(JordanTaxSeeder::class)->run();
 
     expect(JordanTaxProfile::query()->count())->toBe(0);
+});
+
+it('keeps changes the user made to Jordanian taxes when re-run', function () {
+    app(JordanTaxSeeder::class)->run();
+    $tax = jordanTax($this->company, JordanTaxKind::General, TypeTaxUse::SALE);
+    $tax->update(['name' => 'ض.م.ع 16%', 'invoice_label' => 'ضريبة 16%']);
+
+    app(JordanTaxSeeder::class)->run();
+
+    expect($tax->refresh()->name)->toBe('ض.م.ع 16%')
+        ->and($tax->invoice_label)->toBe('ضريبة 16%');
+});
+
+it('does not deactivate a 15 % tax the user created', function () {
+    app(JordanTaxSeeder::class)->run();
+    $own = jordanTax($this->company, JordanTaxKind::General, TypeTaxUse::SALE)->replicate(['name']);
+    $own->forceFill(['name' => 'رسوم 15%', 'amount' => 15, 'is_active' => true])->save();
+
+    app(JordanTaxSeeder::class)->run();
+
+    expect($own->refresh()->is_active)->toBeTrue();
+});
+
+it('writes the default taxes and fiscal country for this company', function () {
+    app(JordanTaxSeeder::class)->run();
+
+    $rows = DB::table('settings')->where('group', 'accounts_taxes')->where('company_id', $this->company->id)->pluck('payload', 'name');
+
+    expect((int) json_decode($rows['account_sale_tax_id']))->toBe(jordanTax($this->company, JordanTaxKind::General, TypeTaxUse::SALE)->id)
+        ->and((int) json_decode($rows['account_fiscal_country_id']))->toBe($this->company->country_id);
 });

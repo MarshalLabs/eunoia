@@ -10,6 +10,7 @@ use Illuminate\Support\Pluralizer;
 /**
  * Teaches Str::plural() Arabic: glossary plurals for Arabic labels, and never an English "s"
  * on an Arabic word ("فاتورةs" → "فواتير", finding F10). English words keep the English rules.
+ * Note: Pluralizer::useLanguage() resets the inflector; call ArabicPluralizer::install() again afterwards.
  */
 class ArabicPluralizer implements WordInflector
 {

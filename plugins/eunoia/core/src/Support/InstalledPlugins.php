@@ -43,7 +43,7 @@ class InstalledPlugins
 
             return $this->installed = Plugin::query()->pluck('is_installed', 'name')->map(fn ($value): bool => (bool) $value)->all();
         } catch (Throwable) {
-            return [];
+            return $this->installed = [];
         }
     }
 }

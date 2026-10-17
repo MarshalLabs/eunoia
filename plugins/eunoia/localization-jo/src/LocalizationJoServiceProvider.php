@@ -46,6 +46,7 @@ class LocalizationJoServiceProvider extends PackageServiceProvider
                     ->installDependencies()
                     ->runsMigrations()
                     ->endWith(function (InstallCommand $command): void {
+                        Package::syncPostgresSequences();
                         app(JordanSeedDataSeeder::class)->run();
                         app(JordanChartOfAccountsSeeder::class)->run();
                         app(JordanTaxSeeder::class)->run();

@@ -6,6 +6,7 @@ use Eunoia\LocalizationJo\Database\Seeders\JordanChartOfAccountsSeeder;
 use Eunoia\LocalizationJo\Database\Seeders\JordanSeedDataSeeder;
 use Eunoia\LocalizationJo\Database\Seeders\JordanTaxSeeder;
 use Illuminate\Console\Command;
+use Webkul\PluginManager\Package;
 
 /**
  * Re-applies the Jordanian data (idempotent) after an upgrade of eunoia/localization-jo.
@@ -18,6 +19,7 @@ class SyncJordanDataCommand extends Command
 
     public function handle(): int
     {
+        Package::syncPostgresSequences();
         app(JordanSeedDataSeeder::class)->run();
         app(JordanChartOfAccountsSeeder::class)->run();
         $this->info(__('eunoia-localization-jo::localization.install.accounts'));

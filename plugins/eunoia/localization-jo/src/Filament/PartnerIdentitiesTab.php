@@ -35,7 +35,9 @@ class PartnerIdentitiesTab
                         TextInput::make('value')
                             ->label(__('eunoia-localization-jo::identities.fields.value'))
                             ->required()
-                            ->extraInputAttributes(['dir' => 'ltr', 'inputmode' => 'numeric'])
+                            ->extraInputAttributes(fn (Get $get): array => in_array($get('type'), [IdentityType::Tin->value, IdentityType::NationalId->value, IdentityType::Tin, IdentityType::NationalId], true)
+                                ? ['dir' => 'ltr', 'inputmode' => 'numeric']
+                                : ['dir' => 'ltr'])
                             ->dehydrateStateUsing(fn (?string $state): string => IdentityType::clean((string) $state))
                             ->rule(fn (Get $get) => function (string $attribute, mixed $value, \Closure $fail) use ($get): void {
                                 $type = IdentityType::tryFrom((string) $get('type'));
