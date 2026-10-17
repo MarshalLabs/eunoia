@@ -8,6 +8,8 @@
  *  2. every __('eunoia-<package>::file.key') / trans() / @lang() used in src/ or resources/views exists in ar and en.
  *  3. ar values contain no Latin letters, except placeholders (:name) and whitelisted terms.
  *
+ * JSON lang files are not used by Eunoia packages (PHP arrays only) and are not checked.
+ *
  * Usage: php .github/scripts/eunoia-i18n-check.php [plugins-root]   (default: plugins/eunoia)
  */
 $root = rtrim($argv[1] ?? 'plugins/eunoia', '/');
@@ -21,6 +23,8 @@ if (! is_dir($root)) {
 }
 
 $errors = [];
+$catalog = [];
+$packageDirs = [];
 
 $flatten = function (array $array, string $prefix = '') use (&$flatten): array {
     $out = [];
@@ -56,7 +60,7 @@ $loadLocale = function (string $dir) use ($flatten): array {
     return $keys;
 };
 
-$latinWhitelistPattern = '/\b('.implode('|', array_map(fn ($w) => preg_quote($w, '/'), $whitelist)).')\b/u';
+$latinWhitelistPattern = '/(?<![A-Za-z])('.implode('|', array_map(fn ($w) => preg_quote($w, '/'), $whitelist)).')(?![A-Za-z])/u';
 
 foreach (glob("{$root}/*", GLOB_ONLYDIR) ?: [] as $packageDir) {
     $package = basename($packageDir);
@@ -85,7 +89,13 @@ foreach (glob("{$root}/*", GLOB_ONLYDIR) ?: [] as $packageDir) {
         }
     }
 
-    $namespace = "eunoia-{$package}";
+    $catalog["eunoia-{$package}"] = ['ar' => $ar, 'en' => $en];
+    $packageDirs[] = $packageDir;
+}
+
+/* Second pass: every eunoia-*:: reference in any package must exist in that namespace, in ar and en. */
+foreach ($packageDirs as $packageDir) {
+    $package = basename($packageDir);
     $sources = [];
 
     foreach (['src', 'resources/views', 'database'] as $sub) {
@@ -105,16 +115,22 @@ foreach (glob("{$root}/*", GLOB_ONLYDIR) ?: [] as $packageDir) {
     foreach ($sources as $file) {
         $content = file_get_contents($file);
 
-        if (! preg_match_all("/(?:__|trans|trans_choice|@lang)\\(\\s*['\"]".preg_quote($namespace, '/')."::([A-Za-z0-9_\\-.]+)['\"]/", $content, $matches)) {
+        if (! preg_match_all("/(?:__|trans|trans_choice|@lang)\\(\\s*['\"](eunoia-[a-z0-9\\-]+)::([A-Za-z0-9_\\-.]+)['\"]/", $content, $matches, PREG_SET_ORDER)) {
             continue;
         }
 
-        foreach (array_unique($matches[1]) as $key) {
+        foreach ($matches as [, $namespace, $key]) {
             if (str_ends_with($key, '.')) {
                 continue; // dynamic key built at runtime, e.g. '...status.'.$value
             }
 
-            foreach (['ar' => $ar, 'en' => $en] as $locale => $keys) {
+            if (! isset($catalog[$namespace])) {
+                $errors[] = "{$package}: {$file} uses unknown namespace '{$namespace}::{$key}'";
+
+                continue;
+            }
+
+            foreach ($catalog[$namespace] as $locale => $keys) {
                 $hasExact = isset($keys[$key]);
                 $hasChildren = (bool) array_filter(array_keys($keys), fn ($k) => str_starts_with($k, $key.'.'));
 

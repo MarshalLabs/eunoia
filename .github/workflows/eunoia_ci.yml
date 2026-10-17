@@ -5,6 +5,7 @@ on:
   push:
     branches: [main, 'feat/**']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -92,12 +93,13 @@ jobs:
         run: |
           php artisan erp:install --no-interaction --force --admin-name=CI --admin-email=admin@example.com --admin-password=admin123 --country=JO
           php artisan point-of-sale:install --no-interaction
-          if php artisan list --raw | grep -q '^eunoia:install'; then php artisan eunoia:install --country=JO --no-interaction; fi
+          if php artisan help eunoia:install >/dev/null 2>&1; then php artisan eunoia:install --country=JO --no-interaction; fi
 
       - name: JoFotara mock
         run: |
           npx --yes jofotara-kit@0.3.0 serve --port 8080 > /tmp/jofotara-mock.log 2>&1 &
-          for _ in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:8080 && break; sleep 1; done
+          for _ in $(seq 1 30); do curl -s -o /dev/null http://127.0.0.1:8080 && exit 0; sleep 1; done
+          cat /tmp/jofotara-mock.log; exit 1
 
       - name: Validate JoFotara golden files
         run: |

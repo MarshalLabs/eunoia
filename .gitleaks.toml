@@ -3,8 +3,11 @@
 useDefault = true
 
 [allowlist]
-description = "Example env files and docs use fake, well-known dev values"
+description = "Known fake local-dev values only — never allowlist whole doc folders"
 paths = [
   '''\.env\.example$''',
-  '''docs/eunoia/.*\.md$''',
+]
+stopwords = [
+  "admin123",
+  "eunoia",
 ]
